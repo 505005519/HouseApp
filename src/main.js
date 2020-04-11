@@ -10,6 +10,9 @@ import "./assets/fonts/iconfont.css" //引入阿里巴巴 矢量图标css（使�
 import Vant from 'vant';
 import 'vant/lib/index.css';
 Vue.use(Vant);
+// vant 懒加载
+import { Lazyload } from 'vant';
+Vue.use(Lazyload);
 
 // axios 
 import axios from "axios";
