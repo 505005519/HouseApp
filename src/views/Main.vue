@@ -1,10 +1,10 @@
 <template>
   <div id="main">
-
      <!-- 二级盒子路由 -->
      <router-view></router-view>
      <!-- 底部菜单 -->
-      <van-tabbar v-model="active">
+      <van-tabbar v-model="active" route>
+
         <van-tabbar-item to="/main/home">
           <span>首页</span>
             <template #icon="props">
@@ -37,8 +37,14 @@
 
 <script>
 export default {
+
+  mounted(){
+    console.log(this);
+    
+  },
   data() {
     return {
+
       active: 0,
       icon: {
          inactive: require('../assets/imgs/home.png'),active: require('../assets/imgs/home_s.png'),

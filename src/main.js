@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from './store'
+import store from './store' //自动配置的仓库
 
 import "./assets/styles/reset.css"; //重置样式
 import "./assets/fonts/iconfont.css" //引入阿里巴巴 矢量图标css（使用参照示例）

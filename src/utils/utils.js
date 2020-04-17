@@ -16,7 +16,7 @@ axios.interceptors.request.use( (req)=>{
 
 // 响应拦截器：数据过滤 统一处理错误信息==============================
 axios.interceptors.response.use( (res)=>{
-    console.log("res",res);
+    // console.log("res",res);
     switch(res.status){
         // 200 301 302 304 403 404 500
          case 200: console.log("调取接口XXX成功！"); break;

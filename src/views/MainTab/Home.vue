@@ -2,7 +2,8 @@
   <div id="home">
     <!-- 搜索框 -->
     <div class="search">
-        <span @click="ToWhere('/city')">{{this.city?this.city:"定位中"}}▼</span>
+        <!-- <span @click="ToWhere('/city')">{{this.city?this.city:"定位中"}}▼</span> -->
+        <span @click="ToWhere('/city')">{{city ? city : "定位中"}}▼</span>
         <van-search @click="ToWhere('/search')"
         v-model="value"
         shape="round"
@@ -25,7 +26,7 @@
     <!-- 猜你喜欢 -->
     <h2 class="guessTitle">猜你喜欢</h2>
 
-    <div class="guessLike" v-for="v in houseList" :key="v.id">
+    <div @click="addToHistory(v)" class="guessLike" v-for="(v) in houseList" :key="v.id" >
         <img :src="v.pic" alt="">
         <div class="description">
             <p class="houseName"><span>{{v.name}}</span><span>{{v.price}}/平</span></p>
@@ -37,7 +38,7 @@
 </template>
 
 <script>
-  import { getHouseList} from "../../apis/apis"
+//   import { getHouseList} from "../../apis/apis"
   export default {
       data(){
           return {
@@ -47,7 +48,7 @@
                     require('../../assets/imgs/carousel_2.jpg'),
                     require('../../assets/imgs/carousel_3.jpg'),
               ],
-              city:"",
+              city:this.$store.state.city,
               gridList:[ // 宫格
                   { id:0, img:require('../../assets/imgs/icon_1.png'),text:"新房" },
                   { id:1, img:require('../../assets/imgs/icon_2.png'),text:"旧房" },
@@ -58,31 +59,58 @@
                   { id:6, img:require('../../assets/imgs/icon_7.png'),text:"桥洞" },
                   { id:7, img:require('../../assets/imgs/icon_1.png'),text:"过道" }
               ],
-              houseList:[]
+            //   houseList:[]
           }
+      },
+       mounted(){
+
+        // 派发执行异步action,仓库获取到数据列表
+        this.$store.dispatch("getHouseList"); 
+        // 高德地图：  AMap在window  console.log(this,window);  key值  箭头函数X2 
+        if( this.city ==="定位中" ){ //注意：这里的技巧 判断是否===定位中；是就执行定位；否则不执行；
+            window.AMap.plugin('AMap.CitySearch', ()=> {
+            var citySearch = new window.AMap.CitySearch()
+                citySearch.getLocalCity((status, result)=> {
+                    if (status === 'complete' && result.info === 'OK') {
+                    // 查询成功，result即为当前所在城市信息
+                        console.log("定位已开启！");
+                        this.city=result.city;
+                        // this.$store.commit("getCurrentCity",result.city);
+                    }
+                })
+            })
+        }
+        console.log("Home城市(computed):",this.city);
+        // 调接口房子列表（现在我要通过vuex来获取）
+        // getHouseList()
+        //  .then( (data)=>{ this.houseList=data.data.data})
+        //  .catch( (err)=>{ throw err})
       },
       methods:{
           ToWhere(url){
               this.$router.push(url);
+          },
+          //  添加到历史记录 （一般用本地存储，用状态机只是为了复习）
+          addToHistory(v){ //事件源不用再标签传参  
+            let historyList=this.$store.state.historyList;
+            historyList.unshift(v); //添加每条数据
+            let falg = true;
+            let index = 0;
+            for(let i=0;i<historyList.length;i++){  // 遍历历史记录 ：
+                if(v.id === historyList[i].id){
+                    falg = !falg; //加进来数据第一次循环必===，falg===false; 后面===; flag===true时就找那个i,把他删除；
+                    index = i;    // break; 优化
+                }
+            }
+            if(falg==true){ historyList.splice(index,1);}
           }
       },
-      mounted(){
-        //  console.log(this,window);  key值  箭头函数  AMap在window
-        window.AMap.plugin('AMap.CitySearch', ()=> {
-        var citySearch = new window.AMap.CitySearch()
-            citySearch.getLocalCity((status, result)=> {
-            if (status === 'complete' && result.info === 'OK') {
-            // 查询成功，result即为当前所在城市信息
-                    this.city=result.city;
-                //  console.log(this.city);
-            }
-            })
-        })
-        // 房子列表
-        getHouseList()
-         .then( (data)=>{ this.houseList=data.data.data})
-         .catch( (err)=>{ throw err})
-      },
+      computed:{
+          houseList(){
+            //  this.$store.dispatch("getHouseList"); //error! 造成死循环：将dispatch放到mounted里面，dom渲染完毕只执行一次
+              return this.$store.state.houseList
+          },
+      }
         
       
   };
